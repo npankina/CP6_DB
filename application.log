@@ -146,3 +146,25 @@ LINE 1: ...ame AS product_name, s.amount, s.supply_date FROM supplies s...
 2024-10-03 18:01:38,440 ERROR: Ошибка при загрузке поставок: 500 Server Error: INTERNAL SERVER ERROR for url: http://localhost:5000/supplies
 2024-10-03 18:05:13,625 INFO: Сервер запущен
 2024-10-03 18:08:57,780 INFO: Сервер запущен
+2024-10-03 18:13:49,068 INFO: Приложение запущено
+2024-10-03 18:13:59,728 INFO: Успешный вход: admin, роль: admin
+2024-10-03 18:13:59,728 INFO: Открыт интерфейс администратора
+2024-10-03 18:14:01,756 ERROR: Ошибка при загрузке товаров: 404 Client Error: NOT FOUND for url: http://localhost:5000/products
+2024-10-03 18:14:05,830 ERROR: Ошибка при получении списка заявок: ОШИБКА:  нет доступа к таблице orders
+
+2024-10-03 18:14:05,831 ERROR: Ошибка при загрузке заявок: 500 Server Error: INTERNAL SERVER ERROR for url: http://localhost:5000/orders
+2024-10-03 18:14:09,866 ERROR: Ошибка при получении списка поставок: ОШИБКА:  нет доступа к таблице supplies
+
+2024-10-03 18:14:09,867 ERROR: Ошибка при загрузке поставок: 500 Server Error: INTERNAL SERVER ERROR for url: http://localhost:5000/supplies
+2024-10-03 20:04:20,787 INFO: Сервер запущен
+2024-10-03 20:04:21,018 INFO: Сервер запущен
+2024-10-03 20:04:26,194 INFO: Приложение запущено
+2024-10-03 20:04:36,988 INFO: Успешный вход: admin, роль: admin
+2024-10-03 20:04:36,988 INFO: Открыт интерфейс администратора
+2024-10-03 20:04:39,005 ERROR: Ошибка при загрузке товаров: 404 Client Error: NOT FOUND for url: http://localhost:5000/products
+2024-10-03 20:04:42,868 ERROR: Ошибка при получении списка заявок: ОШИБКА:  нет доступа к таблице orders
+
+2024-10-03 20:04:42,869 ERROR: Ошибка при загрузке заявок: 500 Server Error: INTERNAL SERVER ERROR for url: http://localhost:5000/orders
+2024-10-03 20:04:52,602 ERROR: Ошибка при получении списка поставок: ОШИБКА:  нет доступа к таблице supplies
+
+2024-10-03 20:04:52,603 ERROR: Ошибка при загрузке поставок: 500 Server Error: INTERNAL SERVER ERROR for url: http://localhost:5000/supplies
