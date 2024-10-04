@@ -16,6 +16,12 @@ users = {
     "supplier": {"password": "2222", "role": "supplier"}
 }
 #--------------------------------------------------------------------------------------------------------------
+
+
+
+
+# DB functions
+#--------------------------------------------------------------------------------------------------------------
 def connect_to_db():
     try:
         conn = psycopg2.connect(
@@ -32,6 +38,36 @@ def connect_to_db():
         logger.error(f"Ошибка подключения к базе данных: {e}")
         return None
 #--------------------------------------------------------------------------------------------------------------
+def create_user(username, password, role):
+    """Добавление нового пользователя в базу данных"""
+    try:
+        with connect_to_db() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+                # Создаем пользователя с логином и паролем
+                cursor.execute(f"CREATE ROLE {username} WITH LOGIN PASSWORD %s", (password,))
+
+                # Присваиваем пользователю роль admin или manager
+                if role == 'admin':
+                    cursor.execute(f"GRANT ALL PRIVILEGES ON DATABASE your_database TO {username}")
+                    cursor.execute(f"ALTER ROLE {username} WITH SUPERUSER")
+                elif role == 'manager':
+                    cursor.execute(f"GRANT CONNECT ON DATABASE your_database TO {username}")
+                    cursor.execute(f"GRANT USAGE ON SCHEMA public TO {username}")
+                    cursor.execute(f"GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO {username}")
+                    cursor.execute(f"GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO {username}")
+                    cursor.execute(
+                        f"ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO {username}")
+                conn.commit()
+                logger.info(f"Пользователь {role} успешно добавлен в базу данных.")
+    except Exception as e:
+        conn.rollback()
+        logger.error(f"Ошибка при создании пользователя: {e}")
+#--------------------------------------------------------------------------------------------------------------
+
+
+
+# Server functions
+#--------------------------------------------------------------------------------------------------------------
 # Маршрут для аутентификации
 @app.route('/login', methods=['POST'])
 def login():
@@ -47,8 +83,24 @@ def login():
         logger.error(f"Ошибка входа в систему. Пользователь: {users[username]['role']}")
         return jsonify({"error": "Неверный логин или пароль"}), 401
 #--------------------------------------------------------------------------------------------------------------
-@app.route('/products', method=['GET'])
-def fetch_products():
+@app.route('/create_user', methods=['POST'])
+def create_user_endpoint():
+    data = request.json
+    username = data['username']
+    password = data['password'] # ? how to store passwords in db
+    role = data['role']
+
+    try:
+        create_user(username, password, role)
+        logger.info(f"Пользователь {username} успешно создан")
+        return jsonify({"message": "User created successfully"}), 200
+
+    except Exception as e:
+        logger.error(f"Пользователь {username} не создан, возникла ошибка: {str(e)}")
+        return jsonify({"error": str(e)}), 400
+#--------------------------------------------------------------------------------------------------------------
+@app.route('/products', methods=['GET'])
+def fetch_all_products():
     try:
         with connect_to_db() as conn:
             with conn.cursor(cursor_factory=RealDictCursor) as cursor:
@@ -139,6 +191,11 @@ def create_supply():
     except Exception as e:
         logger.error(f"Ошибка при добавлении поставки: {e}")
         return jsonify({'error': str(e)}), 500
+#--------------------------------------------------------------------------------------------------------------
+
+
+
+# Запуск программы
 #--------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
     logger.info("Сервер запущен")

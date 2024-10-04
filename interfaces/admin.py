@@ -15,7 +15,9 @@ class Admin_Interface:
         self.products_tab = ttk.Frame(tab_control)
         self.orders_tab = ttk.Frame(tab_control)
         self.supplies_tab = ttk.Frame(tab_control)
+        self.users_tab = ttk.Frame(tab_control)
 
+        tab_control.add(self.users_tab, text="Пользователи")
         tab_control.add(self.products_tab, text="Товары")
         tab_control.add(self.orders_tab, text="Заявки")
         tab_control.add(self.supplies_tab, text="Поставки")
@@ -25,6 +27,7 @@ class Admin_Interface:
         self.create_products_view()
         self.create_orders_view()
         self.create_supplies_view()
+        self.create_user_view()
 
 
     def create_products_view(self):
@@ -110,6 +113,57 @@ class Admin_Interface:
         except Exception as e:
             logger.error(f"Ошибка при загрузке поставок: {e}")
             messagebox.showerror("Ошибка", "Не удалось загрузить поставки")
+
+    def create_user(self, username, password, role):
+        try:
+            if role == 'admin':
+                logger.info(f"Создается администратор: {username}")
+            elif role == 'manager':
+                logger.info(f"Создается менеджер: {role}")
+
+            messagebox.showinfo("Успех", f"Пользователь {username} с ролью {role} успешно создан!")
+
+        except Exception as e:
+            logger.error(f"Ошибка при создании пользователя: {e}")
+            messagebox.showerror("Ошибка", f"Ошибка при создании пользователя: {str(e)}")
+
+
+    def create_user_view(self):
+        frame = ttk.Frame(self.users_tab)
+        frame.pack(fill='both', expand=True, padx=10, pady=10)
+
+        # Поле для ввода имени пользователя
+        tk.Label(frame, text="Имя пользователя").grid(row=0, column=0, padx=5, pady=5)
+        self.username_entry = tk.Entry(frame)
+        self.username_entry.grid(row=0, column=1, padx=5, pady=5)
+
+        # Поле для ввода пароля
+        tk.Label(frame, text="Пароль").grid(row=1, column=0, padx=5, pady=5)
+        self.password_entry = tk.Entry(frame, show="*")
+        self.password_entry.grid(row=1, column=1, padx=5, pady=5)
+
+        # Выбор роли (admin или manager)
+        tk.Label(frame, text="Роль").grid(row=2, column=0, padx=5, pady=5)
+        self.role_var = tk.StringVar(value="manager")
+        tk.Radiobutton(frame, text="Admin", variable=self.role_var, value="admin").grid(row=2, column=1, sticky='w',
+                                                                                        padx=5, pady=5)
+        tk.Radiobutton(frame, text="Manager", variable=self.role_var, value="manager").grid(row=2, column=1, sticky='e',
+                                                                                            padx=5, pady=5)
+
+        # Кнопка для создания пользователя
+        tk.Button(frame, text="Создать пользователя", command=self.on_create_user).grid(row=3, column=1, pady=10)
+
+
+    def create_users_view(self):
+        username = self.username_entry.get()
+        password = self.password_entry.get()
+        role = self.role_var.get()
+
+        if not username or not password:
+            messagebox.showwarning("Ошибка", "Имя пользователя и пароль обязательны для заполнения")
+            return
+
+        self.create_user(username, password, role)
 
 
     # Отображение деталей выбранной заявки
