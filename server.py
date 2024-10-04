@@ -1,30 +1,37 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 import psycopg2
+from contextlib import contextmanager
 from psycopg2.extras import RealDictCursor
 from logger import logger  # Импорт общего логгера
 
+#--------------------------------------------------------------------------------------------------------------
 app = Flask(__name__)
 CORS(app)
-
+#--------------------------------------------------------------------------------------------------------------
 # Фейковые данные пользователей
 users = {
     "admin": {"password": "0000", "role": "admin"},
     "manager": {"password": "1111", "role": "manager"},
     "supplier": {"password": "2222", "role": "supplier"}
 }
-
+#--------------------------------------------------------------------------------------------------------------
 def connect_to_db():
-    conn = psycopg2.connect(
-        dbname="warehouse",
-        user="admin",
-        password="0000",
-        host="localhost",
-        port="5432"
-    )
-    return conn
+    try:
+        conn = psycopg2.connect(
+            dbname="warehouse",
+            user="admin",
+            password="0000",
+            host="localhost",
+            port="5432"
+        )
+        logger.info("Подключение к базе данных выполнено успешно")
+        return conn
 
-
+    except Exception as e:
+        logger.error(f"Ошибка подключения к базе данных: {e}")
+        return None
+#--------------------------------------------------------------------------------------------------------------
 # Маршрут для аутентификации
 @app.route('/login', methods=['POST'])
 def login():
@@ -35,25 +42,43 @@ def login():
     # Проверка пользователя в фейковых данных
     if username in users and users[username]['password'] == password:
         return jsonify({"username": username, "role": users[username]['role']}), 200
+        logger.info(f"Успешный вход в систему. Пользователь: {users[username]['role']}")
     else:
+        logger.error(f"Ошибка входа в систему. Пользователь: {users[username]['role']}")
         return jsonify({"error": "Неверный логин или пароль"}), 401
+#--------------------------------------------------------------------------------------------------------------
+@app.route('/products', method=['GET'])
+def fetch_products():
+    try:
+        with connect_to_db() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+                query = "SELECT * FROM Products"
+                cursor.execute(query)
+                products = cursor.fetchall()
 
+                logger.info(f"Получено {len(products)}  товаров из списка")
+                return jsonify(products), 200
 
+    except Exception as e:
+        logger.error(f"Ошибка при получении списка товаров: {e}")
+        return jsonify({'error': str(e)}), 500
+#--------------------------------------------------------------------------------------------------------------
 @app.route('/orders', methods=['GET'])
 def get_orders():
     try:
-        conn = connect_to_db()
-        cursor = conn.cursor(cursor_factory=RealDictCursor)
-        cursor.execute("SELECT * FROM orders")
-        orders = cursor.fetchall()
-        cursor.close()
-        conn.close()
-        return jsonify(orders), 200
+        with connect_to_db() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+                query = "SELECT * FROM orders"
+                cursor.execute(query)
+                orders = cursor.fetchall()
+
+                logger.info(f"Получено {len(orders)} заявок")
+                return jsonify(orders), 200
+
     except Exception as e:
         logger.error(f"Ошибка при получении списка заявок: {e}")
         return jsonify({'error': str(e)}), 500
-
-
+#--------------------------------------------------------------------------------------------------------------
 @app.route('/orders', methods=['POST'])
 def create_order():
     data = request.get_json()
@@ -62,36 +87,39 @@ def create_order():
     status = data['status']
 
     try:
-        conn = connect_to_db()
-        cursor = conn.cursor()
-        cursor.execute("INSERT INTO orders (store_id, total_sum, status) VALUES (%s, %s, %s)",
-                       (store_id, total_sum, status))
-        conn.commit()
-        cursor.close()
-        conn.close()
+        with connect_to_db() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+                query = "INSERT INTO orders (store_id, total_sum, status) VALUES (%s, %s, %s)"
+                cursor.execute(query, (store_id, total_sum, status))
+                conn.commit()
 
-        logger.info(f"Создана новая заявка с ID магазина {store_id}")
-        return jsonify({'message': 'Заявка создана'}), 201
+                logger.info(f"Заявка успешно создана")
+                return jsonify({'message': 'Заявка создана'}), 201
+
     except Exception as e:
         logger.error(f"Ошибка при создании заявки: {e}")
         return jsonify({'error': str(e)}), 500
-
-
+#--------------------------------------------------------------------------------------------------------------
 @app.route('/supplies', methods=['GET'])
 def get_supplies():
     try:
-        conn = connect_to_db()
-        cursor = conn.cursor(cursor_factory=RealDictCursor)
-        cursor.execute("SELECT s.id, p.name AS product_name, s.amount, s.supply_date FROM supplies s JOIN products p ON s.product_id = p.id")
-        supplies = cursor.fetchall()
-        cursor.close()
-        conn.close()
-        return jsonify(supplies), 200
+        with connect_to_db() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+                query = """
+                            SELECT s.id, p.name AS product_name, s.amount, s.supply_date 
+                            FROM supplies s 
+                            JOIN products p ON s.product_id = p.id
+                        """
+                cursor.execute(query)
+                supplies = cursor.fetchall()
+
+                logger.info("Список поставок получен")
+                return jsonify(supplies), 200
+
     except Exception as e:
         logger.error(f"Ошибка при получении списка поставок: {e}")
         return jsonify({'error': str(e)}), 500
-
-
+#--------------------------------------------------------------------------------------------------------------
 @app.route('/supplies', methods=['POST'])
 def create_supply():
     data = request.get_json()
@@ -99,21 +127,20 @@ def create_supply():
     amount = data['amount']
 
     try:
-        conn = connect_to_db()
-        cursor = conn.cursor()
-        cursor.execute("INSERT INTO supplies (product_id, amount) VALUES (%s, %s)",
-                       (product_id, amount))
-        conn.commit()
-        cursor.close()
-        conn.close()
+        with connect_to_db() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+                query = "INSERT INTO supplies (product_id, amount) VALUES (%s, %s)"
+                cursor.execute(query, (product_id, amount))
+                conn.commit()
 
-        logger.info(f"Добавлена новая поставка для товара ID {product_id}")
-        return jsonify({'message': 'Поставка добавлена'}), 201
+                logger.info(f"Добавлена новая поставка для товара ID {product_id}")
+                return jsonify({'message': 'Поставка добавлена'}), 201
+
     except Exception as e:
         logger.error(f"Ошибка при добавлении поставки: {e}")
         return jsonify({'error': str(e)}), 500
-
-
+#--------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
     logger.info("Сервер запущен")
     app.run(host='0.0.0.0', port=5000, debug=True)
+#--------------------------------------------------------------------------------------------------------------
