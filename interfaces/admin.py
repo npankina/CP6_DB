@@ -128,6 +128,20 @@ class Admin_Interface:
             messagebox.showerror("Ошибка", f"Ошибка при создании пользователя: {str(e)}")
 
 
+    def on_create_user(self):
+        # Извлечение данных из полей ввода
+        username = self.username_entry.get()
+        password = self.password_entry.get()
+        role = self.role_var.get()
+
+        # Проверка на пустые значения
+        if not username or not password or not role:
+            messagebox.showerror("Ошибка", "Заполните все поля")
+            return
+
+        self.create_user(username, password, role)
+
+
     def create_user_view(self):
         frame = ttk.Frame(self.users_tab)
         frame.pack(fill='both', expand=True, padx=10, pady=10)

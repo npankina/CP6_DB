@@ -3,6 +3,7 @@ from flask_cors import CORS
 import psycopg2
 from contextlib import contextmanager
 from psycopg2.extras import RealDictCursor
+from werkzeug.security import generate_password_hash
 from logger import logger  # Импорт общего логгера
 
 #--------------------------------------------------------------------------------------------------------------
@@ -15,6 +16,7 @@ users = {
     "manager": {"password": "1111", "role": "manager"},
     "supplier": {"password": "2222", "role": "supplier"}
 }
+db_name = "warehouse"
 #--------------------------------------------------------------------------------------------------------------
 
 
@@ -40,6 +42,7 @@ def connect_to_db():
 #--------------------------------------------------------------------------------------------------------------
 def create_user(username, password, role):
     """Добавление нового пользователя в базу данных"""
+    hashed_password = generate_password_hash(password)
     try:
         with connect_to_db() as conn:
             with conn.cursor(cursor_factory=RealDictCursor) as cursor:
@@ -48,17 +51,19 @@ def create_user(username, password, role):
 
                 # Присваиваем пользователю роль admin или manager
                 if role == 'admin':
-                    cursor.execute(f"GRANT ALL PRIVILEGES ON DATABASE your_database TO {username}")
+                    cursor.execute(f"GRANT ALL PRIVILEGES ON DATABASE {db_name} TO {username}")
                     cursor.execute(f"ALTER ROLE {username} WITH SUPERUSER")
                 elif role == 'manager':
-                    cursor.execute(f"GRANT CONNECT ON DATABASE your_database TO {username}")
+                    cursor.execute(f"GRANT CONNECT ON DATABASE {db_name} TO {username}")
                     cursor.execute(f"GRANT USAGE ON SCHEMA public TO {username}")
-                    cursor.execute(f"GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO {username}")
+                    cursor.execute(f"GRANT SELECT, INSERT, UPDATE ON ALL TABLES IN SCHEMA public TO {username}")
                     cursor.execute(f"GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO {username}")
                     cursor.execute(
-                        f"ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO {username}")
+                        f"ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE ON TABLES TO {username}")
+
                 conn.commit()
                 logger.info(f"Пользователь {role} успешно добавлен в базу данных.")
+
     except Exception as e:
         conn.rollback()
         logger.error(f"Ошибка при создании пользователя: {e}")
