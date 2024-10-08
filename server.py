@@ -1,10 +1,13 @@
+from multiprocessing import Process
+import tkinter as tk
 from flask import Flask, jsonify, request
-from flask_cors import CORS
-import psycopg2
-from contextlib import contextmanager
 from psycopg2.extras import RealDictCursor
-from werkzeug.security import generate_password_hash
+from flask_cors import CORS
+import requests
+import time
 from logger import logger  # Импорт общего логгера
+from auth import Auth_App
+from db_connection import connect_to_db, create_user
 
 #--------------------------------------------------------------------------------------------------------------
 app = Flask(__name__)
@@ -16,62 +19,15 @@ users = {
     "manager": {"password": "1111", "role": "manager"},
     "supplier": {"password": "2222", "role": "supplier"}
 }
-db_name = "warehouse"
-#--------------------------------------------------------------------------------------------------------------
-
-
-
-
-# DB functions
-#--------------------------------------------------------------------------------------------------------------
-def connect_to_db():
-    try:
-        conn = psycopg2.connect(
-            dbname="warehouse",
-            user="admin",
-            password="0000",
-            host="localhost",
-            port="5432"
-        )
-        logger.info("Подключение к базе данных выполнено успешно")
-        return conn
-
-    except Exception as e:
-        logger.error(f"Ошибка подключения к базе данных: {e}")
-        return None
-#--------------------------------------------------------------------------------------------------------------
-def create_user(username, password, role):
-    """Добавление нового пользователя в базу данных"""
-    hashed_password = generate_password_hash(password)
-    try:
-        with connect_to_db() as conn:
-            with conn.cursor(cursor_factory=RealDictCursor) as cursor:
-                # Создаем пользователя с логином и паролем
-                cursor.execute(f"CREATE ROLE {username} WITH LOGIN PASSWORD %s", (password,))
-
-                # Присваиваем пользователю роль admin или manager
-                if role == 'admin':
-                    cursor.execute(f"GRANT ALL PRIVILEGES ON DATABASE {db_name} TO {username}")
-                    cursor.execute(f"ALTER ROLE {username} WITH SUPERUSER")
-                elif role == 'manager':
-                    cursor.execute(f"GRANT CONNECT ON DATABASE {db_name} TO {username}")
-                    cursor.execute(f"GRANT USAGE ON SCHEMA public TO {username}")
-                    cursor.execute(f"GRANT SELECT, INSERT, UPDATE ON ALL TABLES IN SCHEMA public TO {username}")
-                    cursor.execute(f"GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO {username}")
-                    cursor.execute(
-                        f"ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE ON TABLES TO {username}")
-
-                conn.commit()
-                logger.info(f"Пользователь {role} успешно добавлен в базу данных.")
-
-    except Exception as e:
-        conn.rollback()
-        logger.error(f"Ошибка при создании пользователя: {e}")
 #--------------------------------------------------------------------------------------------------------------
 
 
 
 # Server functions
+#--------------------------------------------------------------------------------------------------------------
+def run_server():
+    # Запуск сервера Flask на localhost и порту 5000
+    app.run(port=5000, debug=False)
 #--------------------------------------------------------------------------------------------------------------
 # Маршрут для аутентификации
 @app.route('/login', methods=['POST'])
@@ -196,13 +152,4 @@ def create_supply():
     except Exception as e:
         logger.error(f"Ошибка при добавлении поставки: {e}")
         return jsonify({'error': str(e)}), 500
-#--------------------------------------------------------------------------------------------------------------
-
-
-
-# Запуск программы
-#--------------------------------------------------------------------------------------------------------------
-if __name__ == '__main__':
-    logger.info("Сервер запущен")
-    app.run(host='0.0.0.0', port=5000, debug=True)
 #--------------------------------------------------------------------------------------------------------------
