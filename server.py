@@ -153,3 +153,84 @@ def create_supply():
         logger.error(f"Ошибка при добавлении поставки: {e}")
         return jsonify({'error': str(e)}), 500
 #--------------------------------------------------------------------------------------------------------------
+@app.route('/reports/orders_volume', methods=['GET'])
+def orders_volume():
+    try:
+        with connect_to_db() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+                query = """
+                SELECT product_id, SUM(amount) as total_ordered
+                FROM Order_items
+                WHERE order_date >= date_trunc('month', current_date)
+                GROUP BY product_id
+                """
+                cursor.execute(query)
+                result = cursor.fetchall()
+                return jsonify(result), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+#--------------------------------------------------------------------------------------------------------------
+@app.route('/reports/stock_remain', methods=['GET'])
+def stock_remain():
+    try:
+        with connect_to_db() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+                query = """
+                SELECT p.name, p.amount
+                FROM Products p
+                WHERE p.amount > 0
+                """
+                cursor.execute(query)
+                result = cursor.fetchall()
+                return jsonify(result), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+#--------------------------------------------------------------------------------------------------------------
+@app.route('/reports/store_orders', methods=['GET'])
+def store_orders():
+    try:
+        with connect_to_db() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+                query = """
+                SELECT store_id, product_id, SUM(amount) as total_ordered
+                FROM Order_items
+                GROUP BY store_id, product_id
+                """
+                cursor.execute(query)
+                result = cursor.fetchall()
+                return jsonify(result), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+#--------------------------------------------------------------------------------------------------------------
+@app.route('/reports/urgent_supply', methods=['GET'])
+def urgent_supply():
+    try:
+        with connect_to_db() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+                query = """
+                SELECT product_id, name, amount
+                FROM Products
+                WHERE amount < min_amount
+                """
+                cursor.execute(query)
+                result = cursor.fetchall()
+                return jsonify(result), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+#--------------------------------------------------------------------------------------------------------------
+@app.route('/reports/invoice_details', methods=['GET'])
+def invoice_details():
+    try:
+        with connect_to_db() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+                query = """
+                SELECT invoice_id, product_id, amount, price
+                FROM Invoices
+                JOIN Order_items ON Invoices.id = Order_items.order_id
+                """
+                cursor.execute(query)
+                result = cursor.fetchall()
+                return jsonify(result), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+#--------------------------------------------------------------------------------------------------------------
