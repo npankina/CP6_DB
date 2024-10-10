@@ -9,13 +9,13 @@ from functions import center_window, Config
 class Admin_Interface(Base_Interface):
     def __init__(self, root):
         super().__init__(root)
-
         # Добавляем вкладку для создания пользователей только для администратора
         self.user_tab = ttk.Frame(self.tab_control)
         self.tab_control.add(self.user_tab, text="Пользователи")
 
         # Вызываем метод для создания интерфейса добавления пользователей
         self.create_user_view()
+
 
     def create_user_view(self):
         """Создание интерфейса для добавления пользователей"""

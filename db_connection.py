@@ -14,7 +14,8 @@ def connect_to_db():
             user="admin",
             password="0000",
             host="localhost",
-            port="5432"
+            port="5432",
+            client_encoding='WIN1251'  # Установим кодировку Windows-1251 (cp1251)
         )
         logger.info("Подключение к базе данных выполнено успешно")
         return conn
