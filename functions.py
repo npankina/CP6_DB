@@ -21,6 +21,4 @@ class Config:
     Products_url = 'http://localhost:5000/products'
     Base_url = 'http://localhost:5000/'
 
-    Reports_base_url = f'{Base_url}/reports'
-    Report_orders_volume_url = f"{Reports_base_url}/orders_volume"
-    Report_shipped_items_url = f"{Reports_base_url}/shipped_items"
+    Reports_url = 'http://localhost:5000/report_'

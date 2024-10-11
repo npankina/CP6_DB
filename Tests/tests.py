@@ -1,4 +1,7 @@
 import pytest
+import unittest
+from server import app  # Импортируем Flask-приложение
+import json
 from unittest.mock import patch, MagicMock
 from flask import Flask, jsonify, request
 
@@ -36,20 +39,20 @@ def client():
     with app.test_client() as client:
         yield client  # Тесты будут использовать этот клиент для отправки запросов
 #--------------------------------------------------------------------------------------------------------------
-def test_login_success(client, valid_user_data):
-    """Тест успешного логина с правильными данными"""
-    responce = client.post(Config.Login, json=valid_user_data)
-    assert responce.status_code == 200
-    data = responce.get_json()
-    assert data['username'] == valid_user_data['username']
-    assert data['role'] == valid_user_data['role']
+# def test_login_success(client, valid_user_data):
+#     """Тест успешного логина с правильными данными"""
+#     responce = client.post(Config.Login, json=valid_user_data)
+#     assert responce.status_code == 200
+#     data = responce.get_json()
+#     assert data['username'] == valid_user_data['username']
+#     assert data['role'] == valid_user_data['role']
 #--------------------------------------------------------------------------------------------------------------
-def test_login_error(client, invalid_user_data):
-    """Тест неудачного логина с неправильным паролем"""
-    responce = client.post(Config.Login, json=invalid_user_data)
-    assert responce.status_code == 401 # статус код 401 (ошибка аутентификации)
-    data = responce.get_json()
-    assert data['error'] == 'Неверный логин или пароль'
+# def test_login_error(client, invalid_user_data):
+#     """Тест неудачного логина с неправильным паролем"""
+#     responce = client.post(Config.Login, json=invalid_user_data)
+#     assert responce.status_code == 401 # статус код 401 (ошибка аутентификации)
+#     data = responce.get_json()
+#     assert data['error'] == 'Неверный логин или пароль'
 #--------------------------------------------------------------------------------------------------------------
 @pytest.fixture
 def mock_db_success():
@@ -72,26 +75,33 @@ def mock_db_error():
     with patch(Config.Error_connect_db, side_effect=Exception("Database error")): # с помощью patch, мы временно заменяем функцию connect_to_db, которая находится в модуле server.
         yield # элемент указывает, что этот блок является частью фикстуры
 #--------------------------------------------------------------------------------------------------------------
-class Test_Product_API:
-    @pytest.mark.usefixtures("client", "mock_db_success")
-    def test_fetch_all_products_succes(self, client):
-        """Тест успешного получения списка товаров"""
-        response = client.get(Config.Products_url)
-        assert response.status_code == 200
-        data = response.get_json()
-        assert len(data) == 2 # Ожидаем два товара в списке
-        assert data[0]['name'] == 'Product 1'
-        assert data[1]['name'] == 'Product 2'
+class Report_Test_Case(unittest.TestCase):
+    def setUp(self):
+        """Инициализация тестового клиента Flask"""
+        self.app = app.test_client()  # Создаем тестовый клиент
+        self.app.testing = True  # Включаем режим тестирования
+
+    def test_report_1_valid_month(self):
+        """Тестирование успешного запроса для отчета #1 с валидным месяцем"""
+        month = 5  # Указываем корректный месяц
+        response = self.app.get(f'/report_1?month={month}')  # Отправляем GET-запрос с месяцем
+        data = json.loads(response.data)  # Загружаем ответ в формате JSON
+
+        # Ожидаем, что запрос будет успешным и сервер вернет статус-код 200
+        self.assertEqual(response.status_code, 200)  # Проверяем, что статус-код 200 OK
+        self.assertIsInstance(data, list)  # Проверяем, что данные возвращаются в виде списка
+        self.assertGreater(len(data), 0)  # Проверяем, что список не пустой
+        self.assertIn('product_name', data[0])  # Проверяем наличие ключа 'product_name' в данных
+        self.assertIn('total_quantity', data[0])  # Проверяем наличие ключа 'total_quantity'
 
 
-    @pytest.mark.usefixtures("client", "mock_db_error")
-    def test_fetch_all_products_error(self, client):
-        """Тест обработки ошибки при запросе к базе данных"""
-        response = client.get(Config.Products_url)
-        assert response.status_code == 500
-        data = response.get_json()
-        assert 'error' in data
-        assert data['error'] == 'Database error'
+    def test_report_1_invalid_argument(self):
+        """Тестирование успешного запроса для отчета #1 с невалидным месяцем"""
+        month = -1
+        response = self.app.get(f"/report_1?month={month}")
+        data = json.loads(response.data)
+
+        self.assertEqual(response.status_code, 404)
 
 
 

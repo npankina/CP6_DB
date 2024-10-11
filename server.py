@@ -6,7 +6,7 @@ from flask_cors import CORS
 
 from functions import Config
 from logger import logger  # Импорт общего логгера
-from db_connection import connect_to_db, create_user
+from db_connection import connect_to_db, create_user, Report_Queries
 
 #--------------------------------------------------------------------------------------------------------------
 app = Flask(__name__)
@@ -165,5 +165,90 @@ def create_supply():
         logger.error(f"Ошибка при добавлении поставки: {e}")
         return jsonify({'error': str(e)}), 500
 #--------------------------------------------------------------------------------------------------------------
+@app.route('/report_1', methods=['GET'])
+def report_1():
+    try:
+        month = int(request.args.get('month')) # Получаем параметр month из запроса
+        logger.info(f"Запрос на отчет #1 для месяца: {month}")
+
+        report_queries = Report_Queries()
+        data = report_queries.report_1(month)
+
+        if not data:
+            return jsonify({'error': f'Нет данных для месяца {month}'}), 404
+
+        return jsonify(data), 200
+
+    except ValueError as ve:
+        logger.error(f"Ошибка в запросе: {ve}")
+        return jsonify({'error': str(ve)}), 400
+
+    except Exception as e:
+        logger.error(f"Ошибка при генерации отчета #1: {e}")
+        return jsonify({'error': 'Не удалось сгенерировать отчет #1'}), 500
+#--------------------------------------------------------------------------------------------------------------
+@app.route('/report_2', methods=['GET'])
+def report_2():
+    """Отчет #2: Сколько и каких товаров было отгружено каждому из магазинов"""
+    try:
+        report_queries = Report_Queries()
+        data = report_queries.report_2()
+
+        if not data:
+            return jsonify({'message': 'Нет данных для отчета'}), 404
+
+        return jsonify(data), 200
+
+    except Exception as e:
+        logger.error(f"Ошибка при генерации отчета #2: {e}")
+        return jsonify({'error': 'Не удалось сгенерировать отчет #2'}), 500
+#--------------------------------------------------------------------------------------------------------------
+@app.route('/report_3', methods=['GET'])
+def report_3():
+    """Отчет: Остатки на складе или магазины, заказывавшие товары"""
+    try:
+        is_stock  = request.args.get('is_stock', default='true').lower() == 'true'
+        report_queries = Report_Queries()
+        data = report_queries.report_3(is_stock)
+
+        if not data:
+            return jsonify({'message': 'Нет данных для отчета'}), 404
+
+
+        return jsonify(data), 200
+
+    except Exception as e:
+        logger.error(f"Ошибка при генерации отчета #3: {e}")
+        return jsonify({'error': 'Не удалось сгенерировать отчет #3'}), 500
+#--------------------------------------------------------------------------------------------------------------
+@app.route('/report_4', methods=['GET'])
+def report_4():
+    try:
+        product_name = request.args.get('product_name')
+        if not product_name:
+            return jsonify({"error": "Необходимо указать имя продукта"}), 400
+
+        report_queries = Report_Queries()
+        data = report_queries.report_4(product_name)
+
+        if not data:
+            return jsonify({'message': 'Нет данных для отчета'}), 404
+
+        return jsonify(data), 200
+    except Exception as e:
+        logger.error(f"Ошибка при генерации отчета #4: {e}")
+        return jsonify({"error": "Ошибка сервера"}), 500
 
 #--------------------------------------------------------------------------------------------------------------
+# @app.route('/report_5', methods=['GET'])
+# def report_5():
+# #--------------------------------------------------------------------------------------------------------------
+# @app.route('/report_6', methods=['GET'])
+# def report_6():
+# #--------------------------------------------------------------------------------------------------------------
+# @app.route('/report_7', methods=['GET'])
+# def report_7():
+# #--------------------------------------------------------------------------------------------------------------
+# @app.route('/report_8', methods=['GET'])
+# def report_8():
+# --------------------------------------------------------------------------------------------------------------

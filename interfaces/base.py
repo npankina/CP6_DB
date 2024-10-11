@@ -2,6 +2,8 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 
 import requests
+
+from interfaces.reports import Reports_Interface
 from logger import logger
 from functions import center_window, Config
 from db_connection import connect_to_db
@@ -13,25 +15,35 @@ class Base_Interface:
         self.root.title("Интерфейс системы")
         center_window(self.root, Config.Width, Config.Height)
 
-        # self.search_entry = None
-        # self.products_search_entry = None
 
         # Создание вкладок
         self.tab_control = ttk.Notebook(self.root)
         self.products_tab = ttk.Frame(self.tab_control)
         self.orders_tab = ttk.Frame(self.tab_control)
         self.supplies_tab = ttk.Frame(self.tab_control)
+        self.reports_tab = ttk.Frame(self.tab_control)  # Вкладка для отчетов
+
 
         self.tab_control.add(self.products_tab, text="Товары")
         self.tab_control.add(self.orders_tab, text="Заявки")
         self.tab_control.add(self.supplies_tab, text="Поставки")
+        self.tab_control.add(self.reports_tab, text="Отчеты")  # Добавляем вкладку для отчетов
 
         self.tab_control.pack(expand=1, fill='both')
+
+        # Создаем объект для отчетов
+        self.reports = Reports_Interface(self)
 
         # Отображение данных на вкладках
         self.create_products_view()
         self.create_orders_view()
         self.create_supplies_view()
+        self.create_reports_view()  # Создаем интерфейс для отчетов
+
+
+    def create_reports_view(self):
+        """Создание интерфейса для отчетов"""
+        self.reports.create_reports_view()
 
 
     def create_products_view(self):
