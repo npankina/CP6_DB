@@ -224,7 +224,7 @@ class Report_Queries:
             return data
 
         except Exception as e:
-            logger.error(f"Ошибка при выполнении запроса к БД для отчета #3: {e}")
+            logger.error(f"Ошибка при выполнении запроса к БД для отчета #4: {e}")
             raise
 
         finally:
@@ -232,58 +232,120 @@ class Report_Queries:
             conn.close()
 
 
+    @staticmethod
+    def report_5():
+        """Отчет #5: Товары, которые нужно срочно завезти на склад"""
+        query = """
+               SELECT p.name AS product_name, p.amount, p.min_amount
+               FROM products p
+               WHERE p.amount < p.min_amount
+           """
+        try:
+            conn = connect_to_db()
+            cursor = conn.cursor()
+            cursor.execute(query)
+            result = cursor.fetchall()
 
-    # @staticmethod
-    # def report_5():
-    #     """Отчет #5: Товары, которые нужно срочно завезти на склад"""
-    #     query = """
-    #            SELECT p.name AS product_name, p.amount, p.min_amount
-    #            FROM products p
-    #            WHERE p.amount < p.min_amount
-    #        """
-    #     return self.execute_query(query)
-    #
-    #
-    # @staticmethod
-    # def report_6(invoice_id):
-    #     """Отчет #6: Товары, отпущенные по конкретной накладной"""
-    #     query = """
-    #            SELECT p.name AS product_name, i.quantity
-    #            FROM products p
-    #            JOIN invoices i ON p.id = i.product_id
-    #            WHERE i.id = %s
-    #        """
-    #     return self.execute_query(query, (invoice_id,))
-    #
-    #
-    # @staticmethod
-    # def report_7(order_id):
-    #     """Отчет #7: Товары, входящие в определенный заказ"""
-    #     query = """
-    #            SELECT p.name AS product_name, o.quantity
-    #            FROM products p
-    #            JOIN order_details o ON p.id = o.product_id
-    #            WHERE o.order_id = %s
-    #        """
-    #     return self.execute_query(query, (order_id,))
-    #
-    #
-    # @staticmethod
-    # def report_8(store_id):
-    #     """Отчет #8: Заказы, сделанные определённым магазином, и товары, не пользующиеся спросом"""
-    #     query_orders = """
-    #            SELECT p.name AS product_name, o.order_date
-    #            FROM products p
-    #            JOIN orders o ON p.id = o.product_id
-    #            WHERE o.store_id = %s
-    #        """
-    #     query_no_demand = """
-    #            SELECT p.name AS product_name
-    #            FROM products p
-    #            LEFT JOIN orders o ON p.id = o.product_id
-    #            WHERE o.product_id IS NULL
-    #        """
-    #     orders = self.execute_query(query_orders, (store_id,))
-    #     no_demand = self.execute_query(query_no_demand)
-    #     return {'orders': orders, 'no_demand_products': no_demand}
+            data = [{'product_name': row[0],
+                     'amount': row[1],
+                     'min_amount': row[2]} for row in result]
+            return data
+
+        except Exception as e:
+            logger.error(f"Ошибка при выполнении запроса к БД для отчета #5: {e}")
+            raise
+
+        finally:
+            cursor.close()
+            conn.close()
+
+
+    @staticmethod
+    def report_6(invoice_id):
+        """Отчет #6: Товары, отпущенные по конкретной накладной"""
+        query = """
+               SELECT p.name AS product_name, i.quantity
+               FROM products p
+               JOIN invoices i ON p.id = i.product_id
+               WHERE i.id = %s
+           """
+        try:
+            conn = connect_to_db()
+            cursor = conn.cursor()
+            cursor.execute(query)
+            result = cursor.fetchall()
+
+            data = [{'product_name': row[0],
+                     'quantity': row[1]} for row in result]
+            return data
+
+        except Exception as e:
+            logger.error(f"Ошибка при выполнении запроса к БД для отчета #6: {e}")
+            raise
+
+        finally:
+            cursor.close()
+            conn.close()
+
+
+    @staticmethod
+    def report_7(order_id):
+        """Отчет #7: Товары, входящие в определенный заказ"""
+        query = """
+               SELECT p.name AS product_name, o.quantity
+               FROM products p
+               JOIN order_details o ON p.id = o.product_id
+               WHERE o.order_id = %s
+           """
+        try:
+            conn = connect_to_db()
+            cursor = conn.cursor()
+            cursor.execute(query)
+            result = cursor.fetchall()
+
+            data = [{'product_name': row[0],
+                     'order_details': row[1]} for row in result]
+            return data
+
+        except Exception as e:
+            logger.error(f"Ошибка при выполнении запроса к БД для отчета #7: {e}")
+            raise
+
+        finally:
+            cursor.close()
+            conn.close()
+
+    @staticmethod
+    def report_8(store_id):
+        """Отчет #8: Заказы, сделанные определённым магазином, и товары, не пользующиеся спросом"""
+        query_orders = """
+               SELECT p.name AS product_name, o.order_date
+               FROM products p
+               JOIN orders o ON p.id = o.product_id
+               WHERE o.store_id = %s
+           """
+        query_no_demand = """
+               SELECT p.name AS product_name
+               FROM products p
+               LEFT JOIN orders o ON p.id = o.product_id
+               WHERE o.product_id IS NULL
+           """
+
+        try:
+            conn = connect_to_db()
+            cursor = conn.cursor()
+            cursor.execute(query_orders)
+            result = cursor.fetchall()
+
+            data = [{'product_name': row[0],
+                     'order_details': row[1]} for row in result]
+            return data
+
+        except Exception as e:
+            logger.error(f"Ошибка при выполнении запроса к БД для отчета #8: {e}")
+            raise
+
+        finally:
+            cursor.close()
+            conn.close()
 #--------------------------------------------------------------------------------------------------------------

@@ -105,11 +105,13 @@ class Reports_Interface:
     def generate_report_5(self):
         """Отчет #5: Товары, которые нужно срочно завезти на склад"""
         try:
-            response = requests.get(f"{Config.Reports_url}/report_5")
+            response = requests.get(f"{Config.Reports_url}5")
             response.raise_for_status()
             data = response.json()
 
-            self.display_report(data)
+            self.display_report_5(data)
+            logger.info(f"Данные для отчета #5: {data}")
+
         except Exception as e:
             logger.error(f"Ошибка при генерации отчета #5: {e}")
             messagebox.showerror("Ошибка", "Не удалось загрузить отчет #5")
@@ -118,11 +120,18 @@ class Reports_Interface:
     def generate_report_6(self):
         """Отчет #6: Товары, отпущенные по конкретной накладной"""
         try:
-            response = requests.get(f"{Config.Reports_url}/report_6")
+            product_name = self.product_entry.get().strip()
+
+            if not product_name:
+                raise ValueError("Поле не может быть пустым. Пожалуйста, введите название товара")
+
+            response = requests.get(f"{Config.Reports_url}6", params={'product_name': product_name})
             response.raise_for_status()
             data = response.json()
 
-            self.display_report(data)
+            logger.info(f"Данные для отчета #6: {data}")
+            self.display_report_6(data)
+
         except Exception as e:
             logger.error(f"Ошибка при генерации отчета #6: {e}")
             messagebox.showerror("Ошибка", "Не удалось загрузить отчет #6")
@@ -131,11 +140,11 @@ class Reports_Interface:
     def generate_report_7(self):
         """Отчет #7: Товары, входящие в определенный заказ"""
         try:
-            response = requests.get(f"{Config.Reports_url}/report_7")
+            response = requests.get(f"{Config.Reports_url}7")
             response.raise_for_status()
             data = response.json()
 
-            self.display_report(data)
+            self.display_report_7(data)
         except Exception as e:
             logger.error(f"Ошибка при генерации отчета #7: {e}")
             messagebox.showerror("Ошибка", "Не удалось загрузить отчет #7")
@@ -144,18 +153,18 @@ class Reports_Interface:
     def generate_report_8(self):
         """Отчет #8: Заказы, сделанные определенным магазином, и товары, не пользующиеся спросом"""
         try:
-            response = requests.get(f"{Config.Reports_url}/report_8")
+            response = requests.get(f"{Config.Reports_url}8")
             response.raise_for_status()
             data = response.json()
 
-            self.display_report(data)
+            self.display_report_8(data)
         except Exception as e:
             logger.error(f"Ошибка при генерации отчета #8: {e}")
             messagebox.showerror("Ошибка", "Не удалось загрузить отчет #8")
 
 
     def display_report_1(self, data):
-        """Отображение данных отчета в Treeview с логированием"""
+        """Отображение данных отчета #1"""
         # Логируем начало отображения отчета
         logger.info("Начато отображение отчета в Treeview")
 
@@ -187,7 +196,7 @@ class Reports_Interface:
         logger.info("Отображение отчета завершено")
 
     def display_report_2(self, data):
-        """Отображение отчета #2 в Treeview"""
+        """Отображение отчета #2"""
         # Очищаем таблицу
         self.report_tree.delete(*self.report_tree.get_children())
 
@@ -209,7 +218,7 @@ class Reports_Interface:
 
 
     def display_report_3(self, data, is_stock):
-        """Отображение отчета #3 в зависимости от типа запроса"""
+        """Отображение отчета #3"""
         # Очищаем таблицу
         self.report_tree.delete(*self.report_tree.get_children())
 
@@ -246,7 +255,7 @@ class Reports_Interface:
 
 
     def display_report_4(self, data):
-        """Отображение отчета #4: Информация о магазинах"""
+        """Отображение отчета #4"""
         # Очищаем таблицу
         self.report_tree.delete(*self.report_tree.get_children())
 
@@ -274,6 +283,109 @@ class Reports_Interface:
                 self.report_tree.insert("", "end", values=values)
         else:
             messagebox.showinfo("Информация", "Нет данных для отображения")
+
+
+    def display_report_5(self, data):
+        """Отображение отчета #5: """
+        # Очищаем таблицу
+        self.report_tree.delete(*self.report_tree.get_children())
+
+        if data:
+            # Устанавливаем заголовки столбцов
+            columns = ['Наименование', 'Количество на складе', 'Минимальный остаток']
+            self.report_tree["columns"] = columns
+
+            for col in columns:
+                self.report_tree.heading(col, text=col)
+                self.report_tree.column(col, width=200)
+
+            # Вставляем строки данных в таблицу
+            for row in data:
+                values = (
+                    row['product_name'],
+                    row['amount'],
+                    row['min_amount']
+                )
+                self.report_tree.insert("", "end", values=values)
+        else:
+            messagebox.showinfo("Информация", "Нет данных для отображения")
+
+
+    def display_report_6(self, data):
+        """Отображение отчета #6"""
+        # Очищаем таблицу
+        self.report_tree.delete(*self.report_tree.get_children())
+
+        if data:
+            # Устанавливаем заголовки столбцов
+            columns = ['Наименование', 'Количество']
+            self.report_tree["columns"] = columns
+
+            for col in columns:
+                self.report_tree.heading(col, text=col)
+                self.report_tree.column(col, width=200)
+
+            # Вставляем строки данных в таблицу
+            for row in data:
+                values = (
+                    row['product_name'],
+                    row['quantity']
+                )
+                self.report_tree.insert("", "end", values=values)
+        else:
+            messagebox.showinfo("Информация", "Нет данных для отображения")
+
+
+
+    def display_report_7(self, data):
+        """Отображение отчета #7"""
+        # Очищаем таблицу
+        self.report_tree.delete(*self.report_tree.get_children())
+
+        if data:
+            # Устанавливаем заголовки столбцов
+            columns = ['Наименование', 'Количество']
+            self.report_tree["columns"] = columns
+
+            for col in columns:
+                self.report_tree.heading(col, text=col)
+                self.report_tree.column(col, width=200)
+
+            # Вставляем строки данных в таблицу
+            for row in data:
+                values = (
+                    row['product_name'],
+                    row['quantity']
+                )
+                self.report_tree.insert("", "end", values=values)
+        else:
+            messagebox.showinfo("Информация", "Нет данных для отображения")
+
+
+    def display_report_8(self, data):
+        """Отображение отчета #8"""
+        # Очищаем таблицу
+        self.report_tree.delete(*self.report_tree.get_children())
+
+        if data:
+            # Устанавливаем заголовки столбцов
+            columns = ['Наименование', 'Количество']
+            self.report_tree["columns"] = columns
+
+            for col in columns:
+                self.report_tree.heading(col, text=col)
+                self.report_tree.column(col, width=200)
+
+            # Вставляем строки данных в таблицу
+            for row in data:
+                values = (
+                    row['product_name'],
+                    row['quantity']
+                )
+                self.report_tree.insert("", "end", values=values)
+        else:
+            messagebox.showinfo("Информация", "Нет данных для отображения")
+
 
 
     def create_reports_view(self):

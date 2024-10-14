@@ -240,15 +240,63 @@ def report_4():
         return jsonify({"error": "Ошибка сервера"}), 500
 
 #--------------------------------------------------------------------------------------------------------------
-# @app.route('/report_5', methods=['GET'])
-# def report_5():
+@app.route('/report_5', methods=['GET'])
+def report_5():
+    try:
+        report_query = Report_Queries()
+        data = report_query.report_5()
+
+        if not data:
+            return jsonify({'message': 'Нет данных для отчета'}), 404
+
+        return jsonify(data), 200
+
+    except Exception as e:
+        logger.error(f"Ошибка при генерации отчета #5: {e}")
+        return jsonify({"error": "Ошибка сервера"}), 500
+#--------------------------------------------------------------------------------------------------------------
+@app.route('/report_6', methods=['GET'])
+def report_6():
+    try:
+        report_query = Report_Queries()
+        data = report_query.report_6()
+
+        if not data:
+            return jsonify({'message': 'Нет данных для отчета'}), 404
+
+        return jsonify(data), 200
+
+    except Exception as e:
+        logger.error(f"Ошибка при генерации отчета #6: {e}")
+        return jsonify({"error": "Ошибка сервера"}), 500
+#--------------------------------------------------------------------------------------------------------------
+@app.route('/report_7', methods=['GET'])
+def report_7():
+    try:
+        report_query = Report_Queries()
+        data = report_query.report_7()
+
+        if not data:
+            return jsonify({'message': 'Нет данных для отчета'}), 404
+
+        return jsonify(data), 200
+
+    except Exception as e:
+        logger.error(f"Ошибка при генерации отчета #7: {e}")
+        return jsonify({"error": "Ошибка сервера"}), 500
 # #--------------------------------------------------------------------------------------------------------------
-# @app.route('/report_6', methods=['GET'])
-# def report_6():
-# #--------------------------------------------------------------------------------------------------------------
-# @app.route('/report_7', methods=['GET'])
-# def report_7():
-# #--------------------------------------------------------------------------------------------------------------
-# @app.route('/report_8', methods=['GET'])
-# def report_8():
+@app.route('/report_8', methods=['GET'])
+def report_8():
+    try:
+        report_query = Report_Queries()
+        data = report_query.report_8()
+
+        if not data:
+            return jsonify({'message': 'Нет данных для отчета'}), 404
+
+        return jsonify(data), 200
+
+    except Exception as e:
+        logger.error(f"Ошибка при генерации отчета #8: {e}")
+        return jsonify({"error": "Ошибка сервера"}), 500
 # --------------------------------------------------------------------------------------------------------------
