@@ -120,12 +120,12 @@ class Reports_Interface:
     def generate_report_6(self):
         """Отчет #6: Товары, отпущенные по конкретной накладной"""
         try:
-            product_name = self.product_entry.get().strip()
+            invoice_id = self.invoice_entry.get().strip()
 
-            if not product_name:
-                raise ValueError("Поле не может быть пустым. Пожалуйста, введите название товара")
+            if not invoice_id:
+                raise ValueError("Поле не может быть пустым. Пожалуйста, введите ID накладной")
 
-            response = requests.get(f"{Config.Reports_url}6", params={'product_name': product_name})
+            response = requests.get(f"{Config.Reports_url}6", params={'invoice_id': invoice_id})
             response.raise_for_status()
             data = response.json()
 
@@ -440,11 +440,22 @@ class Reports_Interface:
         tk.Button(report_4_frame, text="Отчет #4: Информация о магазинах по товару",
                   command=self.generate_report_4).pack(side=tk.LEFT, padx=5, fill=tk.X, expand=True)
 
-        # Кнопки для других отчетов (5-8)
+        # Кнопка для отчета #5
         tk.Button(report_buttons_frame, text="Отчет #5: Товары, необходимые для завоза",
                   command=self.generate_report_5, width=button_width).pack(fill=tk.X)
-        tk.Button(report_buttons_frame, text="Отчет #6: Товары по накладной", command=self.generate_report_6,
-                  width=button_width).pack(fill=tk.X)
+
+        # Кнопка для отчета #6
+        report_6_frame = tk.Frame(report_buttons_frame)
+        report_6_frame.pack(fill=tk.X, pady=5)
+
+        tk.Label(report_6_frame, text="Введите ID накладной:").pack(side=tk.LEFT, padx=5)
+        self.invoice_entry = tk.Entry(report_6_frame, width=20)  # Поле для ввода ID накладной
+        self.invoice_entry.pack(side=tk.LEFT, padx=5)
+
+        tk.Button(report_6_frame, text="Отчет #6: Товары по накладной", command=self.generate_report_6).pack(
+            side=tk.LEFT, padx=5, fill=tk.X, expand=True)
+
+
         tk.Button(report_buttons_frame, text="Отчет #7: Товары в заказе", command=self.generate_report_7,
                   width=button_width).pack(fill=tk.X)
         tk.Button(report_buttons_frame, text="Отчет #8: Заказы магазинов и не пользующиеся спросом товары",

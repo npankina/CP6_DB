@@ -263,16 +263,17 @@ class Report_Queries:
     @staticmethod
     def report_6(invoice_id):
         """Отчет #6: Товары, отпущенные по конкретной накладной"""
-        query = """
-               SELECT p.name AS product_name, i.quantity
-               FROM products p
-               JOIN invoices i ON p.id = i.product_id
-               WHERE i.id = %s
+        query = """               
+                SELECT p.name AS product_name, oi.amount
+                FROM products p
+                JOIN order_items oi ON p.id = oi.product_id
+                JOIN orders o ON oi.order_id = o.id
+                WHERE o.id = %s
            """
         try:
             conn = connect_to_db()
             cursor = conn.cursor()
-            cursor.execute(query)
+            cursor.execute(query, (invoice_id,))
             result = cursor.fetchall()
 
             data = [{'product_name': row[0],

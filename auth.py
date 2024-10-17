@@ -18,8 +18,8 @@ class Auth_App:
         center_window(self.root, 300, 200)
 
         # Поля для ввода логина и пароля
-        # self.username_entry = self.create_entry("Логин", 0)
-        # self.password_entry = self.create_entry("Пароль", 1, show="*")
+        self.username_entry = self.create_entry("Логин", 0)
+        self.password_entry = self.create_entry("Пароль", 1, show="*")
         username = 'admin'
         password = 'admin_password'  # Можно оставить любой пароль
 
@@ -54,26 +54,26 @@ class Auth_App:
         # Автоматически вызываем интерфейс администратора
         self.open_interface_by_role(user_data['role'])
 
-    # def authenticate_user(self):
-    #     username = self.username_entry.get()
-    #     password = self.password_entry.get()
-    #
-    #     if not username or not password:
-    #         messagebox.showerror("Ошибка", "Введите логин и пароль")
-    #         logger.warning("Попытка входа без логина или пароля")
-    #         return
-    #
-    #     # Отправка запроса на сервер для проверки учетных данных
-    #     try:
-    #         response = requests.post(f'{self.BASE_URL}/login', json={'username': username, 'password': password})
-    #         response.raise_for_status()
-    #         user_data = response.json()
-    #
-    #         logger.info(f"Успешный вход: {username}, роль: {user_data['role']}")
-    #         self.open_interface_by_role(user_data['role'])
-    #     except requests.RequestException as e:
-    #         messagebox.showerror("Ошибка", f"Ошибка аутентификации: {e}")
-    #         logger.error(f"Ошибка аутентификации для {username}: {e}")
+    def authenticate_user(self):
+        username = self.username_entry.get()
+        password = self.password_entry.get()
+
+        if not username or not password:
+            messagebox.showerror("Ошибка", "Введите логин и пароль")
+            logger.warning("Попытка входа без логина или пароля")
+            return
+
+        # Отправка запроса на сервер для проверки учетных данных
+        try:
+            response = requests.post(f'{self.BASE_URL}/login', json={'username': username, 'password': password})
+            response.raise_for_status()
+            user_data = response.json()
+
+            logger.info(f"Успешный вход: {username}, роль: {user_data['role']}")
+            self.open_interface_by_role(user_data['role'])
+        except requests.RequestException as e:
+            messagebox.showerror("Ошибка", f"Ошибка аутентификации: {e}")
+            logger.error(f"Ошибка аутентификации для {username}: {e}")
 
     # Открытие интерфейса в зависимости от роли
     def open_interface_by_role(self, role):

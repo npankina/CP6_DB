@@ -258,8 +258,12 @@ def report_5():
 @app.route('/report_6', methods=['GET'])
 def report_6():
     try:
+        invoice_id = request.args.get('invoice_id')
+        if not invoice_id:
+            return jsonify({'error': 'Необходимо указать ID накладной'}), 400
+
         report_query = Report_Queries()
-        data = report_query.report_6()
+        data = report_query.report_6(invoice_id)
 
         if not data:
             return jsonify({'message': 'Нет данных для отчета'}), 404
