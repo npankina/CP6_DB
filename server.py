@@ -30,23 +30,17 @@ def run_server():
 #--------------------------------------------------------------------------------------------------------------
 @app.route('/login', methods=['POST'])
 def login():
-    # Временное решение входа как админ
-    return jsonify({"username": "admin", "role": "admin"}), 200
+    data = request.get_json()
+    username = data.get('username')
+    password = data.get('password')
 
-# # Маршрут для аутентификации
-# @app.route('/login', methods=['POST'])
-# def login():
-#     data = request.get_json()
-#     username = data.get('username')
-#     password = data.get('password')
-#
-#     # Проверка пользователя в фейковых данных
-#     if username in users and users[username]['password'] == password:
-#         return jsonify({"username": username, "role": users[username]['role']}), 200
-#         logger.info(f"Успешный вход в систему. Пользователь: {users[username]['role']}")
-#     else:
-#         logger.error(f"Ошибка входа в систему. Пользователь: {users[username]['role']}")
-#         return jsonify({"error": "Неверный логин или пароль"}), 401
+    # Проверка пользователя в фейковых данных
+    if username in users and users[username]['password'] == password:
+        return jsonify({"username": username, "role": users[username]['role']}), 200
+        logger.info(f"Успешный вход в систему. Пользователь: {users[username]['role']}")
+    else:
+        logger.error(f"Ошибка входа в систему. Пользователь: {users[username]['role']}")
+        return jsonify({"error": "Неверный логин или пароль"}), 401
 #--------------------------------------------------------------------------------------------------------------
 @app.route('/create_user', methods=['POST'])
 def create_user_endpoint():

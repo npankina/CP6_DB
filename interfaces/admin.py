@@ -65,6 +65,7 @@ class Admin_Interface(Base_Interface):
             logger.error(f"Ошибка создания пользователя: {e}")
             messagebox.showerror("Ошибка", "Произошла ошибка при создании пользователя")
 
+
     def show_store_orders(self):
         """Показать заказы магазинов на товары"""
         try:
@@ -78,6 +79,7 @@ class Admin_Interface(Base_Interface):
         except Exception as e:
             logger.error(f"Ошибка при загрузке отчета: {e}")
             messagebox.showerror("Ошибка", "Не удалось загрузить отчет")
+
 
     def display_report(self, data, title):
         """Отображение данных отчета в отдельном окне"""

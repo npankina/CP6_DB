@@ -16,7 +16,7 @@ def connect_to_db():
             password="0000",
             host="localhost",
             port="5432",
-            client_encoding='WIN1251'  # Установим кодировку Windows-1251 (cp1251)
+            client_encoding='WIN1251'  # кодировка Windows-1251 (cp1251)
         )
         logger.info("Подключение к базе данных выполнено успешно")
         return conn
@@ -28,13 +28,11 @@ def connect_to_db():
 def format_date(date_str):
     """Функция для форматирования даты из строки в нужный формат"""
     try:
-        # Преобразуем строку даты в объект datetime
         date_obj = datetime.strptime(date_str, "%a, %d %b %Y %H:%M:%S %Z")
-        # Возвращаем дату в формате "число, месяц, год"
-        return date_obj.strftime("%d, %B %Y")  # Например, "28, March 2023"
+        return date_obj.strftime("%d, %B %Y")  # "28, March 2023"
     except ValueError as e:
         logger.error(f"Ошибка форматирования даты: {e}")
-        return date_str  # Возвращаем исходную строку в случае ошибки
+        return date_str  
 #--------------------------------------------------------------------------------------------------------------
 def create_user(username, password, role):
     """Добавление нового пользователя в базу данных"""
@@ -42,10 +40,8 @@ def create_user(username, password, role):
     try:
         with connect_to_db() as conn:
             with conn.cursor(cursor_factory=RealDictCursor) as cursor:
-                # Создаем пользователя с логином и паролем
                 cursor.execute(f"CREATE ROLE {username} WITH LOGIN PASSWORD %s", (hashed_password,))
 
-                # Присваиваем пользователю роль admin или manager
                 if role == 'admin':
                     cursor.execute(f"GRANT ALL PRIVILEGES ON DATABASE {db_name} TO {username}")
                     cursor.execute(f"ALTER ROLE {username} WITH SUPERUSER")
@@ -84,12 +80,10 @@ class Report_Queries:
             cursor.execute(query, (month,))
             result = cursor.fetchall()
 
-            # Логируем результат запроса
             logger.info(f"Результат запроса для отчета #1: {result}")
 
             if not result:
                 return None
-            # Преобразуем результат в список словарей
             data = [{'product_name': row[0], 'total_quantity': row[1]} for row in result]
             return data
 
@@ -159,7 +153,6 @@ class Report_Queries:
             cursor.execute(query)
             result = cursor.fetchall()
 
-            # Форматируем результат
             if is_stock:
                 data = [{'product_name': row[0], 'quantity_in_stock': row[1]} for row in result]
             else:

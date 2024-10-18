@@ -1,8 +1,6 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
-
 import requests
-
 from interfaces.reports import Reports_Interface
 from logger import logger
 from functions import center_window, Config
@@ -14,7 +12,6 @@ class Base_Interface:
         self.root = root
         self.root.title("Интерфейс системы")
         center_window(self.root, Config.Width, Config.Height)
-
 
         # Создание вкладок
         self.tab_control = ttk.Notebook(self.root)
@@ -94,7 +91,6 @@ class Base_Interface:
 
     def display_products(self, products):
         """Функция для отображения товаров в таблице"""
-        print(f"Отображаем {len(products)} товаров")  # Для отладки
         logger.info(f"Отображаем {len(products)} товаров")
 
         # Очищаем текущие данные в таблице
@@ -112,7 +108,6 @@ class Base_Interface:
 
     def search_products(self):
         """Функция для поиска товаров по строке"""
-        print("Поиск начат")  # Для отладки
         logger.info("Поиск начат")
 
         search_text = self.products_search_entry.get().strip().lower()  # Используем строку поиска для товаров
@@ -129,7 +124,6 @@ class Base_Interface:
         else:
             logger.info("Поле поиска пустое. Отображаем все товары.")
             self.display_products(self.products)
-
 
 
     def create_orders_view(self):
@@ -191,6 +185,7 @@ class Base_Interface:
             logger.info("Поле поиска пустое. Отображаем все заказы.")
             self.display_orders(self.orders)
 
+
     def load_orders(self):
         """Загрузка данных о заявках через серверное API"""
         try:
@@ -210,6 +205,7 @@ class Base_Interface:
         except Exception as e:
             logger.error(f"Ошибка при загрузке заказов: {e}")
             messagebox.showerror("Ошибка", f"Не удалось загрузить заказы: {str(e)}")
+
 
     def display_orders(self, orders):
         """Функция для отображения заказов в таблице"""

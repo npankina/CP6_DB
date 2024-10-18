@@ -39,7 +39,6 @@ class Reports_Interface:
             messagebox.showerror("Ошибка", "Не удалось загрузить отчет #1")
 
 
-
     def generate_report_2(self):
         """Отчет #2: Товары, отгруженные по магазинам"""
         try:
@@ -195,6 +194,7 @@ class Reports_Interface:
 
         logger.info("Отображение отчета завершено")
 
+
     def display_report_2(self, data):
         """Отображение отчета #2"""
         # Очищаем таблицу
@@ -336,7 +336,6 @@ class Reports_Interface:
             messagebox.showinfo("Информация", "Нет данных для отображения")
 
 
-
     def display_report_7(self, data):
         """Отображение отчета #7"""
         # Очищаем таблицу
@@ -385,7 +384,6 @@ class Reports_Interface:
                 self.report_tree.insert("", "end", values=values)
         else:
             messagebox.showinfo("Информация", "Нет данных для отображения")
-
 
 
     def create_reports_view(self):
@@ -454,7 +452,6 @@ class Reports_Interface:
 
         tk.Button(report_6_frame, text="Отчет #6: Товары по накладной", command=self.generate_report_6).pack(
             side=tk.LEFT, padx=5, fill=tk.X, expand=True)
-
 
         tk.Button(report_buttons_frame, text="Отчет #7: Товары в заказе", command=self.generate_report_7,
                   width=button_width).pack(fill=tk.X)
